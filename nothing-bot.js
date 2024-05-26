@@ -2,7 +2,6 @@
 // ---------- Nothing Discord/Telegram Buy notif Bot ------------ //
 // -------------------------------------------------------------- //
 
-
 // Imports
 const fs = require("node:fs");
 const path = require("node:path");
@@ -16,6 +15,12 @@ client.commands = new Collection();
 
 const bot = new TelegramBot(tgtoken, { polling: false });
 const telegramChatId = "-1001942852379";
+
+const imagePath = path.join(__dirname, "not.png");
+const velarChartUrl =
+  "https://stxtools.io/pools/VELAR_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps";
+const alexChartUrl =
+  "https://stxtools.io/pools/ALEX_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps";
 
 // Global Variables + retrieve commands and events
 global.stxPrice = 0;
@@ -59,41 +64,54 @@ for (const file of eventFiles) {
   } else {
     client.on(event.name, (...args) =>
       event.execute(...args, client, currentPrice)
-    ); 
+    );
   }
 }
 
 // Functions to send message to Telegram
 async function sendTelegramMessage(message) {
   try {
-    await bot.sendMessage(telegramChatId, message, { parse_mode: "HTML" });
+    const options = {
+      caption: message,
+      disable_notification: false,
+      parse_mode: "HTML",
+    };
+
+    await bot.sendPhoto(telegramChatId, imagePath, options);
     console.log("Message sent to Telegram");
   } catch (error) {
     console.error("Error sending message to Telegram:", error);
   }
 }
 
-function buildTelegramMessage(title, fromamnt, toamnt, from, to, price, mcap) {
-  return `<b>${title}</b>
+function buildTelegramMessage(
+  title, fromamnt, toamnt, from, to, price, mcap, dex, chartUrl, txUrl
+) {
+  return `<a href="${imagePath}">&#8205;</a>
+<b> ✦✦ ${title}!! ✦✦</b>
 ${buildEmojiText(fromamnt, from)}
-<b>From:</b> ${fromamnt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${from}  ($${(stxPrice * fromamnt).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+<b>From:</b> ${fromamnt.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ${from}  ($${(stxPrice * fromamnt).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })})
 <b>To:</b> ${toamnt.toLocaleString()} ${to}
-<b>DEX:</b> AlexLab
+<b>DEX:</b> ${dex}
 <b>Price:</b> $${price.toFixed(10)}
 <b>Market Cap:</b> $${mcap.toLocaleString()}
-`;
+
+<i><a href="${chartUrl}">Chart</a> | <a href="${txUrl}">See TX</a></i>`;
 }
 
 function buildEmojiText(amnt, from) {
   let balls = "🟠";
-  if (from === "NOT") {
-    balls = "⚫";
-  }
-  const i = amnt / 100;
+  const i = amnt / 30;
   let text = "";
   for (let x = 1; x <= i; x++) {
     text = text + balls;
-    if (x >= 50) {
+    if (x >= 100) {
       break;
     }
   }
@@ -101,19 +119,24 @@ function buildEmojiText(amnt, from) {
 }
 
 // Function to build Discord message
-function buildDiscordMessage(fromamnt, toamnt, from, to, price, mcap) {
-
-    if (from === "STX") {
-        return `**${fromamnt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${from}** swapped for **${toamnt.toLocaleString()} ${to}**
-**DEX:** AlexLab
+function buildDiscordMessage(fromamnt, toamnt, from, to, price, mcap, dex) {
+  if (from === "STX") {
+    return `**${fromamnt.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} ${from}** swapped for **${toamnt.toLocaleString()} ${to}**
+**DEX:** ${dex}
 **Price:** $${price.toFixed(10)}
 **Market Cap:** $${mcap.toLocaleString()}`;
-    } else {
-        return `**${fromamnt.toLocaleString()} ${from}** swapped for **${toamnt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${to}**
-**DEX:** AlexLab
+  } else {
+    return `**${fromamnt.toLocaleString()} ${from}** swapped for **${toamnt.toLocaleString(
+      undefined,
+      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    )} ${to}**
+**DEX:** ${dex}
 **Price:** $${price.toFixed(10)}
 **Market Cap:** $${mcap.toLocaleString()}`;
-    }
+  }
 }
 
 // Function to fetch price from API
@@ -139,22 +162,22 @@ async function fetchPrice() {
 
 // Function to fetch price from API
 async function fetchSTXPrice() {
-   try {
-      const response = await fetch("https://api.alexgo.io/v1/price/token-wstx");
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch price (${response.status} ${response.statusText})`
-        );
-      }
-  
-      const data = await response.json();
-      stxPrice = data.price;
-  
-      console.log(`Successfully fetched STX price: ${stxPrice}`);
-    } catch (error) {
-      console.error("Error fetching price:", error);
+  try {
+    const response = await fetch("https://api.alexgo.io/v1/price/token-wstx");
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch price (${response.status} ${response.statusText})`
+      );
     }
+
+    const data = await response.json();
+    stxPrice = data.price;
+
+    console.log(`Successfully fetched STX price: ${stxPrice}`);
+  } catch (error) {
+    console.error("Error fetching price:", error);
   }
+}
 
 // Function to fetch circulating supply
 async function fetchSupply() {
@@ -191,8 +214,7 @@ async function fetchSupply() {
 
 // Function to fetch current block height
 async function fetchBlockHeight() {
-  
-    await fetchSTXPrice();      
+  await fetchSTXPrice();
 
   try {
     const response = await fetch(
@@ -266,7 +288,20 @@ async function fetchNotSwaps(height) {
           arg.repr.includes("token-wnope")
         );
         return hasMatchingArg;
+      } else if (
+        result.tx_status.includes("success") &&
+        result.tx_type.includes("contract_call") &&
+        result.contract_call.contract_id.includes("univ2-router") &&
+        result.contract_call.function_name.includes(
+          "swap-exact-tokens-for-tokens"
+        )
+      ) {
+        const hasMatchingArg = result.contract_call.function_args.some((arg) =>
+          arg.repr.includes("nope")
+        );
+        return hasMatchingArg;
       }
+
       return false;
     });
 
@@ -291,14 +326,14 @@ async function fetchNotSwaps(height) {
               const event = transferEvent.events[i];
               if (event.event_type === "stx_asset") {
                 from = "STX";
-                fromAmount = (event.asset.amount / 1000000);
+                fromAmount = event.asset.amount / 1000000;
                 break;
               }
             }
           }
         } else {
           from = "STX";
-          fromAmount = (firstEvent.asset.amount / 1000000);
+          fromAmount = firstEvent.asset.amount / 1000000;
         }
 
         if (lastEvent.event_type === "fungible_token_asset") {
@@ -310,14 +345,14 @@ async function fetchNotSwaps(height) {
               const event = transferEvent.events[i];
               if (event.event_type === "stx_asset") {
                 to = "STX";
-                toAmount = (event.asset.amount / 1000000);
+                toAmount = event.asset.amount / 1000000;
                 break;
               }
             }
           }
         } else {
           to = "STX";
-          toAmount = (lastEvent.asset.amount / 1000000);
+          toAmount = lastEvent.asset.amount / 1000000;
         }
 
         const type = from === "NOT" ? "sell" : "buy";
@@ -330,6 +365,7 @@ async function fetchNotSwaps(height) {
           to: to,
           toAmount: toAmount,
           type: type,
+          dex: transferEvent.dex,
         };
 
         swaps.push(swap);
@@ -338,58 +374,71 @@ async function fetchNotSwaps(height) {
       console.log(swaps);
 
       const channelId = global.channelId;
+      let channel = null;
       if (channelId) {
-        const channel = client.channels.cache.get(channelId);
-        if (channel) {
-          for (const swap of swaps) {
-            const color = swap.type === "sell" ? "#FF0000" : "#00FF00";
-            const title = swap.type === "sell" ? "New NOT Sell" : "New NOT Buy";
-            const price = swap.type === "sell" ? parseFloat((stxPrice * swap.toAmount) / swap.fromAmount) :  parseFloat((stxPrice * swap.fromAmount) / swap.toAmount);
-            const mcap = Math.floor(price * Number(currentSupply));
+        channel = client.channels.cache.get(channelId);
+      } else {
+        console.error("Buy/sell channel has not been set.");
+      }
 
-            const embed = new EmbedBuilder()
-              .setColor(color)
-              .setTitle(title)
-              .setURL(`https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`)
-              .setDescription(buildDiscordMessage(
+      for (const swap of swaps) {
+        const color = swap.type === "sell" ? "#FF0000" : "#00FF00";
+        const title = swap.type === "sell" ? "New NOT Sell" : "New NOT Buy";
+        const price =
+          swap.type === "sell"
+            ? parseFloat((stxPrice * swap.toAmount) / swap.fromAmount)
+            : parseFloat((stxPrice * swap.fromAmount) / swap.toAmount);
+        const mcap = Math.floor(price * Number(currentSupply));
+        const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
+        const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
+
+        if (channel) {
+          const embed = new EmbedBuilder()
+            .setColor(color)
+            .setTitle(title)
+            .setURL(txUrl)
+            .setDescription(
+              buildDiscordMessage(
                 swap.fromAmount,
                 swap.toAmount,
                 swap.from,
                 swap.to,
                 price,
-                mcap
-              ))
-              .setTimestamp()
-              .setFooter({
-                text: `on Block ${height}`,
-                iconURL:
-                  "https://bafkreieug75i7f74at6gailpsox52lgs2ct7zccht5nobik3giv4opkeuu.ipfs.dweb.link/",
-              });
+                mcap,
+                swap.dex
+              )
+            )
+            .setTimestamp()
+            .setFooter({
+              text: `on Block ${height}`,
+              iconURL:
+                "https://bafkreieug75i7f74at6gailpsox52lgs2ct7zccht5nobik3giv4opkeuu.ipfs.dweb.link/",
+            });
 
-            await channel.send({ embeds: [embed] });
-
-            if (swap.type === "buy" && swap.fromAmount >= 100) {
-              sendTelegramMessage(
-                buildTelegramMessage(
-                  title,
-                  swap.fromAmount,
-                  swap.toAmount,
-                  swap.from,
-                  swap.to,
-                  price,
-                  mcap
-                )
-              );
-            }
-
-            currentPrice = price;
-            marketCap = mcap;
-          }
+          await channel.send({ embeds: [embed] });
         } else {
           console.error(`Channel with ID ${channelId} not found.`);
         }
-      } else {
-        console.error("Buy/sell channel has not been set.");
+
+        if (swap.type === "buy" && swap.fromAmount >= 30) {
+          sendTelegramMessage(
+            buildTelegramMessage(
+              title,
+              swap.fromAmount,
+              swap.toAmount,
+              swap.from,
+              swap.to,
+              price,
+              mcap,
+              swap.dex,
+              cUrl,
+              txUrl
+            )
+          );
+        }
+
+        currentPrice = price;
+        marketCap = mcap;
       }
     } else {
       console.log("No matching results found");
@@ -424,12 +473,27 @@ async function fetchEventData(filteredResults) {
       if (!response.ok) {
         throw new Error("Failed to fetch");
       }
+
       const eventData = (await response.json()).events.filter(
-        (event) => event.asset && event.asset.asset_event_type === "transfer"
+        (event) =>
+          event.asset &&
+          event.asset.asset_event_type === "transfer" &&
+          !event.asset.recipient.includes("univ2-share-fee-to")
       );
+
+      let dexName = "None";
+      if (filteredResult.contract_call.contract_id.includes("amm-swap-pool")) {
+        dexName = "AlexLab";
+      } else if (
+        filteredResult.contract_call.contract_id.includes("univ2-router")
+      ) {
+        dexName = "Velar";
+      }
+
       transferEventsArray.push({
         tx_id: filteredResult.tx_id,
         events: eventData,
+        dex: dexName,
       });
     } catch (error) {
       console.error("Error fetching event data:", error);
@@ -441,22 +505,19 @@ async function fetchEventData(filteredResults) {
 
 // Fetch functions at startup and every X seconds
 async function startFetchingData() {
-    try {
-        await Promise.all([
-            fetchPrice(),
-            fetchSupply()
-        ]);
+  try {
+    await Promise.all([fetchPrice(), fetchSupply()]);
 
-        await fetchBlockHeight();
-        setInterval(fetchBlockHeight, 120000);
-        setInterval(fetchSupply, 1200000);
-
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
+    await fetchBlockHeight();
+    setInterval(fetchBlockHeight, 120000);
+    setInterval(fetchSupply, 1200000);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
 }
 
 startFetchingData();
 
 // Discord bot login
 client.login(token);
+
