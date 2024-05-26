@@ -8,8 +8,8 @@ module.exports = {
 
         const exampleEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setTitle('Click here for NOT Chart')
-			.setURL('https://stxtools.io/tokens/SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope/swaps')
+            .setTitle('Check NOT Chart')
+	    .setDescription('[AlexLab](https://stxtools.io/pools/ALEX_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps)\n[Velar](https://stxtools.io/pools/VELAR_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps)')
             .setTimestamp()
             .setFooter({ text: 'Nothing Bot - @wrappednothing', iconURL: 'https://bafkreieug75i7f74at6gailpsox52lgs2ct7zccht5nobik3giv4opkeuu.ipfs.dweb.link/'});
         
