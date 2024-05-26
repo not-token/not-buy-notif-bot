@@ -8,8 +8,8 @@ module.exports = {
 
         const exampleEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setTitle('Click here to Swap NOT on Alexlab')
-			.setURL('https://app.alexlab.co/pool/token-amm-swap-pool-v1-1:token-wstx,token-wnope,1e8')
+            .setTitle('Swap NOT on..')
+            .setDescription('[AlexLab](https://app.alexlab.co/swap?fromCurrency=token-wstx&toCurrency=token-wnope)\n[Velar](https://app.velar.com/swap)')
             .setTimestamp()
             .setFooter({ text: 'Nothing Bot - @wrappednothing', iconURL: 'https://bafkreieug75i7f74at6gailpsox52lgs2ct7zccht5nobik3giv4opkeuu.ipfs.dweb.link/'});
         
