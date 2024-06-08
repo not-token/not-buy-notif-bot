@@ -140,6 +140,27 @@ function buildDiscordMessage(fromamnt, toamnt, from, to, price, mcap, dex) {
 }
 
 // Function to fetch price from API
+async function fetchPrice() {
+  try {
+    const response = await fetch("https://api.alexgo.io/v1/price/token-wnope");
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch price (${response.status} ${response.statusText})`
+      );
+    }
+
+    const data = await response.json();
+    currentPrice = parseFloat(data.price);
+
+    marketCap = Math.floor(Number(currentSupply) * Number(currentPrice));
+
+    console.log(`Successfully fetched NOT price: ${currentPrice}`);
+  } catch (error) {
+    console.error("Error fetching price:", error);
+  }
+}
+
+// Function to fetch price from API
 async function fetchSTXPrice() {
   try {
     const response = await fetch("https://api.velar.co/tokens/?symbol=STX");
@@ -151,26 +172,6 @@ async function fetchSTXPrice() {
 
     const data = await response.json();
     const stxPrice = data[0].price;
-
-    console.log(`Successfully fetched STX price: ${stxPrice}`);
-  } catch (error) {
-    console.error("Error fetching price:", error);
-  }
-}
-
-
-// Function to fetch price from API
-async function fetchSTXPrice() {
-  try {
-    const response = await fetch("https://api.alexgo.io/v1/price/token-wstx");
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch price (${response.status} ${response.statusText})`
-      );
-    }
-
-    const data = await response.json();
-    stxPrice = data.price;
 
     console.log(`Successfully fetched STX price: ${stxPrice}`);
   } catch (error) {
