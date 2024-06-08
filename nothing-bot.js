@@ -142,7 +142,7 @@ function buildDiscordMessage(fromamnt, toamnt, from, to, price, mcap, dex) {
 // Function to fetch price from API
 async function fetchPrice() {
   try {
-    const response = await fetch("https://api.alexgo.io/v1/price/token-wnope");
+    const response = await fetch("https://api.velar.co/tokens/?symbol=NOT");
     if (!response.ok) {
       throw new Error(
         `Failed to fetch price (${response.status} ${response.statusText})`
@@ -150,7 +150,7 @@ async function fetchPrice() {
     }
 
     const data = await response.json();
-    currentPrice = parseFloat(data.price);
+    currentPrice = parseFloat(data[0].price);
 
     marketCap = Math.floor(Number(currentSupply) * Number(currentPrice));
 
