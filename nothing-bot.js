@@ -154,7 +154,7 @@ async function fetchPrice() {
 
     marketCap = Math.floor(Number(currentSupply) * Number(currentPrice));
 
-    console.log(`Successfully fetched NOT price: ${currentPrice}`);
+    console.log(`Successfully fetched NOT price: ${currentPrice} at MCAP ${marketCap}`);
   } catch (error) {
     console.error("Error fetching price:", error);
   }
@@ -171,8 +171,7 @@ async function fetchSTXPrice() {
     }
 
     const data = await response.json();
-    const stxPrice = data[0].price;
-
+    stxPrice = data[0].price;
     console.log(`Successfully fetched STX price: ${stxPrice}`);
   } catch (error) {
     console.error("Error fetching price:", error);
@@ -384,11 +383,13 @@ async function fetchNotSwaps(height) {
       for (const swap of swaps) {
         const color = swap.type === "sell" ? "#FF0000" : "#00FF00";
         const title = swap.type === "sell" ? "New NOT Sell" : "New NOT Buy";
+
         const price =
           swap.type === "sell"
-            ? parseFloat((stxPrice * swap.toAmount) / swap.fromAmount)
-            : parseFloat((stxPrice * swap.fromAmount) / swap.toAmount);
+            ? parseFloat((Number(stxPrice) * swap.toAmount) / swap.fromAmount)
+            : parseFloat((Number(stxPrice) * swap.fromAmount) / swap.toAmount);
         const mcap = Math.floor(price * Number(currentSupply));
+        console.log(price,mcap);
         const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
         const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
 
@@ -520,4 +521,3 @@ startFetchingData();
 
 // Discord bot login
 client.login(token);
-
