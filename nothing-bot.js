@@ -280,7 +280,7 @@ async function fetchNotSwaps(height) {
       if (
         result.tx_status.includes("success") &&
         result.tx_type.includes("contract_call") &&
-        result.contract_call.contract_id.includes("amm-swap-pool") &&
+        result.contract_call.contract_id.includes("amm-pool-v2") &&
         result.contract_call.function_name.includes("swap-helper")
       ) {
         const hasMatchingArg = result.contract_call.function_args.some((arg) =>
