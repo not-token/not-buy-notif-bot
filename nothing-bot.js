@@ -33,7 +33,7 @@ global.currentPrice = 0;
 global.currentSupply = 0;
 global.marketCap = 0;
 global.blockHeight = 0;
-global.channelId = null;
+global.channelId = buySellChannel || null;
 
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
@@ -464,7 +464,7 @@ async function fetchNotSwaps(height) {
       }
     } else {
       console.log("No matching results found");
-      const channelId = global.channelId || buySellChannel;
+      const channelId = global.channelId;
       if (channelId) {
         const channel = client.channels.cache.get(channelId);
         if (channel) {
