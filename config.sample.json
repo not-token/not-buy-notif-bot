@@ -1,0 +1,6 @@
+{
+  "token": "discord bot token",
+  "tgtoken": "telegram bot token",
+  "clientId": "discord bot client id",
+  "buySellChannel": "the channel where events would be broadcast"
+}

@@ -5,8 +5,13 @@
 // Imports
 const fs = require("node:fs");
 const path = require("node:path");
-const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord.js");
-const { token, tgtoken } = require("./config.json");
+const {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  EmbedBuilder,
+} = require("discord.js");
+const { token, tgtoken, buySellChannel } = require("./config.json");
 const TelegramBot = require("node-telegram-bot-api");
 
 // Bots inits
@@ -85,7 +90,16 @@ async function sendTelegramMessage(message) {
 }
 
 function buildTelegramMessage(
-  title, fromamnt, toamnt, from, to, price, mcap, dex, chartUrl, txUrl
+  title,
+  fromamnt,
+  toamnt,
+  from,
+  to,
+  price,
+  mcap,
+  dex,
+  chartUrl,
+  txUrl
 ) {
   return `<a href="${imagePath}">&#8205;</a>
 <b> ✦✦ ${title}!! ✦✦</b>
@@ -154,7 +168,9 @@ async function fetchPrice() {
 
     marketCap = Math.floor(Number(currentSupply) * Number(currentPrice));
 
-    console.log(`Successfully fetched NOT price: ${currentPrice} at MCAP ${marketCap}`);
+    console.log(
+      `Successfully fetched NOT price: ${currentPrice} at MCAP ${marketCap}`
+    );
   } catch (error) {
     console.error("Error fetching price:", error);
   }
@@ -389,8 +405,13 @@ async function fetchNotSwaps(height) {
             ? parseFloat((Number(stxPrice) * swap.toAmount) / swap.fromAmount)
             : parseFloat((Number(stxPrice) * swap.fromAmount) / swap.toAmount);
         const mcap = Math.floor(price * Number(currentSupply));
-        console.log(price,mcap);
-        const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
+        console.log(price, mcap);
+        const cUrl =
+          swap.dex === "AlexLab"
+            ? alexChartUrl
+            : swap.dex === "Velar"
+            ? velarChartUrl
+            : "None";
         const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
 
         if (channel) {
@@ -443,7 +464,7 @@ async function fetchNotSwaps(height) {
       }
     } else {
       console.log("No matching results found");
-      const channelId = global.channelId;
+      const channelId = global.channelId || buySellChannel;
       if (channelId) {
         const channel = client.channels.cache.get(channelId);
         if (channel) {
