@@ -5,13 +5,8 @@
 // Imports
 const fs = require("node:fs");
 const path = require("node:path");
-const {
-  Client,
-  GatewayIntentBits,
-  Collection,
-  EmbedBuilder,
-} = require("discord.js");
-const { token, tgtoken, buySellChannel } = require("./config.json");
+const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord.js");
+const { token, tgtoken } = require("./config.json");
 const TelegramBot = require("node-telegram-bot-api");
 
 // Bots inits
@@ -33,7 +28,7 @@ global.currentPrice = 0;
 global.currentSupply = 0;
 global.marketCap = 0;
 global.blockHeight = 0;
-global.channelId = buySellChannel || null;
+global.channelId = null;
 
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
@@ -90,16 +85,7 @@ async function sendTelegramMessage(message) {
 }
 
 function buildTelegramMessage(
-  title,
-  fromamnt,
-  toamnt,
-  from,
-  to,
-  price,
-  mcap,
-  dex,
-  chartUrl,
-  txUrl
+  title, fromamnt, toamnt, from, to, price, mcap, dex, chartUrl, txUrl
 ) {
   return `<a href="${imagePath}">&#8205;</a>
 <b> ✦✦ ${title}!! ✦✦</b>
@@ -168,9 +154,7 @@ async function fetchPrice() {
 
     marketCap = Math.floor(Number(currentSupply) * Number(currentPrice));
 
-    console.log(
-      `Successfully fetched NOT price: ${currentPrice} at MCAP ${marketCap}`
-    );
+    console.log(`Successfully fetched NOT price: ${currentPrice} at MCAP ${marketCap}`);
   } catch (error) {
     console.error("Error fetching price:", error);
   }
@@ -300,7 +284,7 @@ async function fetchNotSwaps(height) {
         result.contract_call.function_name.includes("swap-helper")
       ) {
         const hasMatchingArg = result.contract_call.function_args.some((arg) =>
-          arg.repr.includes("token-wnope")
+          arg.repr.includes("token-wnot")
         );
         return hasMatchingArg;
       } else if (
@@ -332,6 +316,7 @@ async function fetchNotSwaps(height) {
         const firstEvent = transferEvent.events[0];
         const lastEvent = transferEvent.events[transferEvent.events.length - 1];
 
+        let foundSTX = false;
         if (firstEvent.event_type === "fungible_token_asset") {
           if (firstEvent.asset.asset_id.includes("NOT")) {
             from = "NOT";
@@ -342,7 +327,19 @@ async function fetchNotSwaps(height) {
               if (event.event_type === "stx_asset") {
                 from = "STX";
                 fromAmount = event.asset.amount / 1000000;
+                foundSTX = true;
                 break;
+              }
+            }
+
+            if (!foundSTX) {
+              for (let i = 0; i < transferEvent.events.length; i++) {
+                const event = transferEvent.events[i];
+                if (event.event_type === "fungible_token_asset" && event.asset.asset_id.includes("alex")) {
+                  from = "ALEX";
+                  fromAmount = event.asset.amount / 1000000;
+                  break;
+                }
               }
             }
           }
@@ -351,6 +348,7 @@ async function fetchNotSwaps(height) {
           fromAmount = firstEvent.asset.amount / 1000000;
         }
 
+        let foundSTX2 = false;
         if (lastEvent.event_type === "fungible_token_asset") {
           if (lastEvent.asset.asset_id.includes("NOT")) {
             to = "NOT";
@@ -361,7 +359,19 @@ async function fetchNotSwaps(height) {
               if (event.event_type === "stx_asset") {
                 to = "STX";
                 toAmount = event.asset.amount / 1000000;
+                foundSTX2 = true;
                 break;
+              }
+            }
+
+            if (!foundSTX2) {
+              for (let i = transferEvent.events.length - 1; i > 0; i--) {
+                const event = transferEvent.events[i];
+                if (event.event_type === "fungible_token_asset" && event.asset.asset_id.includes("alex")) {
+                  from = "ALEX";
+                  fromAmount = event.asset.amount / 1000000;
+                  break;
+                }
               }
             }
           }
@@ -405,13 +415,8 @@ async function fetchNotSwaps(height) {
             ? parseFloat((Number(stxPrice) * swap.toAmount) / swap.fromAmount)
             : parseFloat((Number(stxPrice) * swap.fromAmount) / swap.toAmount);
         const mcap = Math.floor(price * Number(currentSupply));
-        console.log(price, mcap);
-        const cUrl =
-          swap.dex === "AlexLab"
-            ? alexChartUrl
-            : swap.dex === "Velar"
-            ? velarChartUrl
-            : "None";
+        console.log(price,mcap);
+        const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
         const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
 
         if (channel) {
@@ -504,7 +509,7 @@ async function fetchEventData(filteredResults) {
       );
 
       let dexName = "None";
-      if (filteredResult.contract_call.contract_id.includes("amm-swap-pool")) {
+      if (filteredResult.contract_call.contract_id.includes("amm-pool-v2")) {
         dexName = "AlexLab";
       } else if (
         filteredResult.contract_call.contract_id.includes("univ2-router")
