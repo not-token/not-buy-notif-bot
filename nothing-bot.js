@@ -410,11 +410,21 @@ async function fetchNotSwaps(height) {
         const color = swap.type === "sell" ? "#FF0000" : "#00FF00";
         const title = swap.type === "sell" ? "New NOT Sell" : "New NOT Buy";
 
-        const price =
+        let price = 0;
+        let mcap = 0;
+
+        if (swap.from === "ALEX" || swap.to === "ALEX") {
+          price = global.currentPrice;
+          mcap = global.marketCap;
+        } else {
+          price =
           swap.type === "sell"
             ? parseFloat((Number(stxPrice) * swap.toAmount) / swap.fromAmount)
             : parseFloat((Number(stxPrice) * swap.fromAmount) / swap.toAmount);
-        const mcap = Math.floor(price * Number(currentSupply));
+          mcap = Math.floor(price * Number(currentSupply));
+        }
+
+
         console.log(price,mcap);
         const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
         const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
