@@ -87,13 +87,17 @@ async function sendTelegramMessage(message) {
 function buildTelegramMessage(
   title, fromamnt, toamnt, from, to, price, mcap, dex, chartUrl, txUrl
 ) {
+  let value = stxPrice * fromamnt;
+  if (from === "ALEX") {
+    value = toamnt * price;
+  }
   return `<a href="${imagePath}">&#8205;</a>
 <b> ✦✦ ${title}!! ✦✦</b>
 ${buildEmojiText(fromamnt, from)}
 <b>From:</b> ${fromamnt.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} ${from}  ($${(stxPrice * fromamnt).toLocaleString(undefined, {
+  })} ${from}  ($${(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })})
@@ -337,7 +341,7 @@ async function fetchNotSwaps(height) {
                 const event = transferEvent.events[i];
                 if (event.event_type === "fungible_token_asset" && event.asset.asset_id.includes("alex")) {
                   from = "ALEX";
-                  fromAmount = event.asset.amount / 1000000;
+                  fromAmount = event.asset.amount / 100000000;
                   break;
                 }
               }
@@ -369,7 +373,7 @@ async function fetchNotSwaps(height) {
                 const event = transferEvent.events[i];
                 if (event.event_type === "fungible_token_asset" && event.asset.asset_id.includes("alex")) {
                   from = "ALEX";
-                  fromAmount = event.asset.amount / 1000000;
+                  fromAmount = event.asset.amount / 100000000;
                   break;
                 }
               }
