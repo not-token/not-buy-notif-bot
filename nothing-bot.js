@@ -17,10 +17,8 @@ const bot = new TelegramBot(tgtoken, { polling: false });
 const telegramChatId = "-1001942852379";
 
 const imagePath = path.join(__dirname, "not.png");
-const velarChartUrl =
-  "https://stxtools.io/pools/VELAR_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps";
-const alexChartUrl =
-  "https://stxtools.io/pools/ALEX_SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope_stx/swaps";
+const chartUrl = "https://stxtools.io/tokens/SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope";
+
 
 // Global Variables + retrieve commands and events
 global.stxPrice = 0;
@@ -430,7 +428,6 @@ async function fetchNotSwaps(height) {
 
 
         console.log(price,mcap);
-        const cUrl = swap.dex === "AlexLab" ? alexChartUrl : swap.dex === "Velar" ? velarChartUrl : "None";
         const txUrl = `https://explorer.hiro.so/txid/${swap.id}?chain=mainnet`;
 
         if (channel) {
@@ -472,7 +469,7 @@ async function fetchNotSwaps(height) {
               price,
               mcap,
               swap.dex,
-              cUrl,
+              chartUrl,
               txUrl
             )
           );
